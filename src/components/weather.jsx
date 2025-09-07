@@ -5,26 +5,43 @@ function Weather() {
   const [city, setCity] = useState("");
   const [weather, setWeather] = useState(null);
   const [error, setError] = useState("");
-  const [val, setVal] = useState("");
+
   const API_KEY = "d536805fcc5146c48c542650250609";
 
   const getWeather = async () => {
-    if (!city){
-      alert("To get weather information pls enter city name first👇")
+    if (city == "") {
+      alert("To get weather information pls enter city name first👇");
+      return;
     }
+    if (!/^[a-zA-Z\s]*$/.test(city)) {
+      alert("To get weather information pls enter valid city name first👇");
+      return;
+    }
+    // if(/^[a-zA-Z\s]*$/.test(city)){
     try {
       setError("");
       const response = await fetch(
-        `http://api.weatherapi.com/v1/current.json?key=${API_KEY}&q=${city},India&aqi=yes`
+        `https://api.weatherapi.com/v1/current.json?key=${API_KEY}&q=${city}&aqi=yes`
       );
-      if (!response.ok) {
-        throw new Error("city not found");
-      }
+      // if (!response.ok) {
+      //   throw new Error("city not found");
+      // }
       const data = await response.json();
-      setWeather(data);
-      console.log(data);
+      if (data.error) {
+        setError("city not found");
+        setWeather(null);
+        return;
+      }
+        if (data.location && data.location.country !== "India") {
+      setError("Only Indian cities are allowed 🌏");
+      setWeather(null);
+      return;
+    }
+        setWeather(data);
+        console.log(data);
+      
     } catch (err) {
-      setError(err.message);
+     alert("erroe occured!")
       setWeather(null);
     }
     setCity("");
@@ -81,7 +98,7 @@ function Weather() {
           Search
         </button>
       </div>
-      {error && <div>No city found type valid city</div>}
+      {error && <div>{error}</div>}
       {weather && (
         <div className="capitalize">
           <span className="mx-2">{weather.location.name}</span>
@@ -107,7 +124,7 @@ function Weather() {
             <div className="flex justify-content-center gap-4">
               <p>🥏Humidity:{weather.current.humidity}%</p>
               <p>
-                🍃Wind:{weather.current.wind_kph} km/h{" "}
+                🍃Wind:{weather.current.wind_kph} km/h
                 {weather.current.wind_dir}
               </p>
             </div>
